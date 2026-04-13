@@ -1,0 +1,16 @@
+{
+  "cli": {
+    "version": ">= 3.0.0"
+  },
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://polite-mandrill-982.convex.cloud"
+      }
+    },
+    "production": {}
+  }
+}
