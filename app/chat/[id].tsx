@@ -140,33 +140,35 @@ export default function ChatScreen() {
                     { marginBottom: item.isFirstInGroup ? 10 : 2 },
                   ]}
                 >
-                  <View
-                    style={[
-                      styles.bubble,
-                      isMe ? styles.myBubble : styles.theirBubble,
-                      isMe && item.isFirstInGroup && styles.myBubbleTail,
-                      !isMe && item.isFirstInGroup && styles.theirBubbleTail,
-                    ]}
-                  >
-                    {!isMe &&
-                      item.isLastInGroup &&
-                      conversation?.type === "group" && (
-                        <Text style={styles.senderName}>{item.userName}</Text>
-                      )}
-                    <Text
-                      style={isMe ? styles.myText : styles.theirText}
-                      textBreakStrategy="simple"
-                    >
-                      {item.body}
-                    </Text>
-                    <Text
+                  <View style={styles.bubbleWrapper}>
+                    <View
                       style={[
-                        styles.timeStamp,
-                        isMe ? styles.myTime : styles.theirTime,
+                        styles.bubble,
+                        isMe ? styles.myBubble : styles.theirBubble,
+                        isMe && item.isFirstInGroup && styles.myBubbleTail,
+                        !isMe && item.isFirstInGroup && styles.theirBubbleTail,
                       ]}
                     >
-                      {formatTime(item._creationTime)}
-                    </Text>
+                      {!isMe &&
+                        item.isLastInGroup &&
+                        conversation?.type === "group" && (
+                          <Text style={styles.senderName}>{item.userName}</Text>
+                        )}
+                      <Text
+                        style={isMe ? styles.myText : styles.theirText}
+                        textBreakStrategy="simple"
+                      >
+                        {item.body}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.timeStamp,
+                          isMe ? styles.myTime : styles.theirTime,
+                        ]}
+                      >
+                        {formatTime(item._creationTime)}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -195,7 +197,7 @@ export default function ChatScreen() {
               placeholderTextColor="#555"
               multiline
               maxLength={1000}
-              blurOnSubmit={false}
+              submitBehavior="newline"
             />
             <TouchableOpacity
               style={[
@@ -311,8 +313,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     alignItems: "flex-start",
   },
-  bubble: {
+  bubbleWrapper: {
     maxWidth: BUBBLE_MAX_WIDTH,
+  },
+  bubble: {
+    alignSelf: "flex-start",
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 9,
