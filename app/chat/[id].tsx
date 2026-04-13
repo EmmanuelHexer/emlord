@@ -307,10 +307,14 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   myBubble: {
-    backgroundColor: "#1E293B",
+    backgroundColor: "#162044",
+    borderLeftWidth: 3,
+    borderLeftColor: "#2563EB",
   },
   theirBubble: {
     backgroundColor: "#1A1A26",
+    borderLeftWidth: 3,
+    borderLeftColor: "#7C3AED",
   },
   myBubbleTail: {
     borderBottomLeftRadius: 6,
