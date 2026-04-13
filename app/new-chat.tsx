@@ -10,9 +10,9 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  SafeAreaView,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Id } from "../convex/_generated/dataModel";
 
 type Mode = "select" | "group";
@@ -182,7 +182,7 @@ export default function NewChat() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
+    backgroundColor: "#0D0D14",
   },
   header: {
     flexDirection: "row",
@@ -190,13 +190,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: "#1A1A24",
+    backgroundColor: "#1A1A26",
     borderBottomWidth: 1,
     borderBottomColor: "#2A2A3A",
     paddingTop: Platform.OS === "android" ? 40 : 14,
   },
   backText: {
-    color: "#6C5CE7",
+    color: "#2563EB",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -211,13 +211,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#1A1A24",
+    borderBottomColor: "#1A1A26",
   },
   groupIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#6C5CE7",
+    backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: "#F9FAFB",
-    backgroundColor: "#1A1A24",
+    backgroundColor: "#1A1A26",
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   selectedCount: {
     marginLeft: 12,
     fontSize: 13,
-    color: "#6C5CE7",
+    color: "#2563EB",
     fontWeight: "600",
   },
   searchInput: {
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     fontSize: 15,
     color: "#F9FAFB",
-    backgroundColor: "#1A1A24",
+    backgroundColor: "#1A1A26",
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -315,8 +315,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   checkboxSelected: {
-    backgroundColor: "#6C5CE7",
-    borderColor: "#6C5CE7",
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
   },
   checkmark: {
     color: "#fff",
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
   createButton: {
-    backgroundColor: "#6C5CE7",
+    backgroundColor: "#2563EB",
     marginHorizontal: 20,
     marginBottom: 24,
     paddingVertical: 15,

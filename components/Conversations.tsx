@@ -8,66 +8,94 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  SafeAreaView,
   Platform,
+  TextInput,
+  StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState, useMemo } from "react";
 
 export function Conversations() {
   const conversations = useQuery(api.conversations.list);
   const currentUser = useQuery(api.users.currentUser);
   const { signOut } = useAuthActions();
   const router = useRouter();
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!conversations) return [];
+    if (!search.trim()) return conversations;
+    const q = search.toLowerCase();
+    return conversations.filter((c) =>
+      c.displayName.toLowerCase().includes(q)
+    );
+  }, [conversations, search]);
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0D0D14" />
+
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerLeft}>
           <Text style={styles.headerTitle}>Ethreal</Text>
-          <Text style={styles.headerSubtitle}>
-            {currentUser?.name || currentUser?.email || ""}
-          </Text>
         </View>
         <TouchableOpacity onPress={signOut} style={styles.signOutButton}>
-          <Text style={styles.signOutText}>Sign Out</Text>
+          <Text style={styles.signOutText}>Log out</Text>
         </TouchableOpacity>
       </View>
 
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search conversations"
+          placeholderTextColor="#555"
+          value={search}
+          onChangeText={setSearch}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      </View>
+
       <FlatList
-        data={conversations}
+        data={filtered}
         keyExtractor={(item) => item._id}
         style={styles.list}
-        contentContainerStyle={conversations?.length === 0 ? styles.emptyList : undefined}
+        contentContainerStyle={filtered.length === 0 ? styles.emptyList : undefined}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.conversationItem}
             onPress={() => router.push(`/chat/${item._id}`)}
-            activeOpacity={0.7}
+            activeOpacity={0.6}
           >
-            <View style={styles.avatar}>
+            <View
+              style={[
+                styles.avatar,
+                item.type === "group" ? styles.groupAvatar : styles.dmAvatar,
+              ]}
+            >
               <Text style={styles.avatarText}>
-                {item.type === "group"
-                  ? item.displayName.charAt(0).toUpperCase()
-                  : item.displayName.charAt(0).toUpperCase()}
+                {item.displayName.charAt(0).toUpperCase()}
               </Text>
             </View>
+
             <View style={styles.conversationInfo}>
-              <View style={styles.conversationTop}>
+              <View style={styles.topRow}>
                 <Text style={styles.conversationName} numberOfLines={1}>
                   {item.displayName}
                 </Text>
                 {item.lastMessageTime && (
-                  <Text style={styles.conversationTime}>
+                  <Text style={styles.timeText}>
                     {formatTime(item.lastMessageTime)}
                   </Text>
                 )}
               </View>
-              <View style={styles.conversationBottom}>
+              <View style={styles.bottomRow}>
                 <Text style={styles.lastMessage} numberOfLines={1}>
-                  {item.lastMessageText ?? "No messages yet"}
+                  {item.lastMessageText ?? "Tap to start chatting"}
                 </Text>
                 {item.type === "group" && (
-                  <View style={styles.groupBadge}>
-                    <Text style={styles.groupBadgeText}>
+                  <View style={styles.memberBadge}>
+                    <Text style={styles.memberBadgeText}>
                       {item.members.length}
                     </Text>
                   </View>
@@ -78,9 +106,10 @@ export function Conversations() {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>💬</Text>
             <Text style={styles.emptyTitle}>No conversations yet</Text>
             <Text style={styles.emptySubtitle}>
-              Tap + to start a new chat
+              Start a new chat by tapping the button below
             </Text>
           </View>
         }
@@ -89,9 +118,9 @@ export function Conversations() {
       <TouchableOpacity
         style={styles.fab}
         onPress={() => router.push("/new-chat")}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
-        <Text style={styles.fabText}>+</Text>
+        <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -105,9 +134,9 @@ function formatTime(timestamp: number): string {
 
   if (diffDays === 0) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } else if (diffDays === 1) {
-    return "Yesterday";
-  } else if (diffDays < 7) {
+  }
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) {
     return date.toLocaleDateString([], { weekday: "short" });
   }
   return date.toLocaleDateString([], { month: "short", day: "numeric" });
@@ -116,39 +145,49 @@ function formatTime(timestamp: number): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
+    backgroundColor: "#0D0D14",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: "#1A1A24",
-    borderBottomWidth: 1,
-    borderBottomColor: "#2A2A3A",
-    paddingTop: Platform.OS === "android" ? 40 : 12,
+    paddingBottom: 8,
+    paddingTop: Platform.OS === "android" ? 44 : 8,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "800",
     color: "#F9FAFB",
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginTop: 2,
+    letterSpacing: 0.5,
   },
   signOutButton: {
-    backgroundColor: "#2A2A3A",
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.06)",
   },
   signOutText: {
-    color: "#9CA3AF",
+    color: "#888",
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "500",
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+  },
+  searchInput: {
+    backgroundColor: "#1A1A26",
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: "#F9FAFB",
   },
   list: {
     flex: 1,
@@ -160,28 +199,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1A1A24",
+    paddingVertical: 12,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#6C5CE7",
+    width: 52,
+    height: 52,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14,
   },
+  dmAvatar: {
+    backgroundColor: "#2563EB",
+  },
+  groupAvatar: {
+    backgroundColor: "#7C3AED",
+  },
   avatarText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
   },
   conversationInfo: {
     flex: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#1A1A26",
+    paddingBottom: 12,
   },
-  conversationTop: {
+  topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -192,69 +237,78 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#F9FAFB",
     flex: 1,
-    marginRight: 8,
+    marginRight: 12,
   },
-  conversationTime: {
+  timeText: {
     fontSize: 12,
-    color: "#6B7280",
+    color: "#555",
   },
-  conversationBottom: {
+  bottomRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   lastMessage: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#777",
     flex: 1,
     marginRight: 8,
   },
-  groupBadge: {
-    backgroundColor: "#2A2A3A",
+  memberBadge: {
+    backgroundColor: "#1A1A26",
     borderRadius: 10,
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 2,
+    minWidth: 22,
+    alignItems: "center",
   },
-  groupBadgeText: {
+  memberBadgeText: {
     fontSize: 11,
-    color: "#9CA3AF",
+    color: "#888",
     fontWeight: "600",
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 20,
+    fontWeight: "700",
     color: "#F9FAFB",
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 20,
   },
   fab: {
     position: "absolute",
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#6C5CE7",
+    bottom: 28,
+    right: 20,
+    width: 58,
+    height: 58,
+    borderRadius: 20,
+    backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 4,
-    shadowColor: "#6C5CE7",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  fabText: {
-    fontSize: 28,
+  fabIcon: {
+    fontSize: 30,
     color: "#fff",
     fontWeight: "300",
-    marginTop: -2,
+    marginTop: -1,
   },
 });

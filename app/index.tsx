@@ -1,7 +1,7 @@
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
-import { SignIn } from "./sign-in";
-import { Conversations } from "./conversations";
+import { SignIn } from "../components/SignIn";
+import { Conversations } from "../components/Conversations";
 
 export default function Index() {
   return (
@@ -24,7 +24,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
+    backgroundColor: "#0D0D14",
   },
   loading: {
     flex: 1,

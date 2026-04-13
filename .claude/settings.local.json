@@ -23,7 +23,12 @@
       "Bash(curl -s \"https://docs.convex.dev/database/reading-data/indexes\")",
       "Bash(curl -s \"https://docs.convex.dev/database/reading-data\")",
       "WebFetch(domain:gist.github.com)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:sendbird.com)",
+      "WebFetch(domain:createbytes.com)",
+      "WebFetch(domain:blog.logrocket.com)",
+      "WebFetch(domain:muz.li)",
+      "Bash(npm ls:*)"
     ]
   }
 }

@@ -169,7 +169,7 @@ export function SignIn() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
+    backgroundColor: "#0D0D14",
   },
   scrollContent: {
     flexGrow: 1,
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   input: {
-    backgroundColor: "#111118",
+    backgroundColor: "#0D0D14",
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#111118",
+    backgroundColor: "#0D0D14",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#2A2A3A",
@@ -241,11 +241,11 @@ const styles = StyleSheet.create({
   },
   eyeIcon: {
     fontSize: 13,
-    color: "#6C5CE7",
+    color: "#2563EB",
     fontWeight: "600",
   },
   button: {
-    backgroundColor: "#6C5CE7",
+    backgroundColor: "#2563EB",
     borderRadius: 10,
     paddingVertical: 15,
     alignItems: "center",
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   switchTextBold: {
-    color: "#6C5CE7",
+    color: "#2563EB",
     fontWeight: "600",
   },
 });

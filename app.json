@@ -6,13 +6,13 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#111118",
+    "backgroundColor": "#0D0D14",
     "newArchEnabled": true,
     "scheme": "emlord",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#111118"
+      "backgroundColor": "#0D0D14"
     },
     "ios": {
       "supportsTablet": true
@@ -21,7 +21,7 @@
       "package": "com.hexerspeck.emlord",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#111118"
+        "backgroundColor": "#0D0D14"
       },
       "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
