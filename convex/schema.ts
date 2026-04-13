@@ -7,5 +7,5 @@ export default defineSchema({
   messages: defineTable({
     userId: v.id("users"),
     body: v.string(),
-  }).index("by_creation_time", ["_creationTime"]),
+  }),
 });

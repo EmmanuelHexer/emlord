@@ -1,6 +1,6 @@
 import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "../convex/_generated/api";
 import { useState, useRef, useEffect, useMemo } from "react";
 import {
   View,
