@@ -13,7 +13,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   StatusBar,
+  Dimensions,
 } from "react-native";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const BUBBLE_MAX_WIDTH = SCREEN_WIDTH * 0.78;
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
@@ -307,7 +311,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   bubble: {
-    maxWidth: "82%",
+    maxWidth: BUBBLE_MAX_WIDTH,
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 9,
@@ -338,13 +342,11 @@ const styles = StyleSheet.create({
     color: "#F1F5F9",
     fontSize: 16,
     lineHeight: 22,
-    flexShrink: 1,
   },
   theirText: {
     color: "#E5E5E5",
     fontSize: 16,
     lineHeight: 22,
-    flexShrink: 1,
   },
   timeStamp: {
     fontSize: 11,
