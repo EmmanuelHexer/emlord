@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,12 +11,6 @@ import {
   Pressable,
 } from "react-native";
 
-function EyeIcon({ open }: { open: boolean }) {
-  return (
-    <Text style={styles.eyeIcon}>{open ? "\u{1F441}" : "\u{1F441}\u{200D}\u{1F5E8}"}</Text>
-  );
-}
-
 export function SignIn() {
   const { signIn } = useAuthActions();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
@@ -27,7 +21,7 @@ export function SignIn() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setError("");
     setLoading(true);
     try {
@@ -42,7 +36,13 @@ export function SignIn() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, password, flow, name, signIn]);
+
+  const toggleFlow = useCallback(() => {
+    setFlow((f) => (f === "signIn" ? "signUp" : "signIn"));
+    setError("");
+    setShowPassword(false);
+  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -68,6 +68,7 @@ export function SignIn() {
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
+                autoCorrect={false}
               />
             </View>
           )}
@@ -81,7 +82,10 @@ export function SignIn() {
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
+              autoCorrect={false}
               keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
             />
           </View>
 
@@ -90,18 +94,23 @@ export function SignIn() {
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
-                placeholder="Enter password"
+                placeholder={flow === "signIn" ? "Enter password" : "Create a password"}
                 placeholderTextColor="#6B7280"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+                textContentType="none"
+                spellCheck={false}
               />
               <Pressable
-                onPress={() => setShowPassword(!showPassword)}
+                onPress={() => setShowPassword((s) => !s)}
                 style={styles.eyeButton}
                 hitSlop={8}
               >
-                <EyeIcon open={showPassword} />
+                <Text style={styles.eyeIcon}>{showPassword ? "Hide" : "Show"}</Text>
               </Pressable>
             </View>
           </View>
@@ -125,16 +134,13 @@ export function SignIn() {
         </View>
 
         <TouchableOpacity
-          onPress={() => {
-            setFlow(flow === "signIn" ? "signUp" : "signIn");
-            setError("");
-            setShowPassword(false);
-          }}
+          onPress={toggleFlow}
           style={styles.switchButton}
+          activeOpacity={0.7}
         >
           <Text style={styles.switchText}>
             {flow === "signIn"
-              ? "Don't have an account? "
+              ? "Don\u2019t have an account? "
               : "Already have an account? "}
             <Text style={styles.switchTextBold}>
               {flow === "signIn" ? "Sign Up" : "Sign In"}
@@ -222,8 +228,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   eyeIcon: {
-    fontSize: 18,
-    opacity: 0.6,
+    fontSize: 13,
+    color: "#6C5CE7",
+    fontWeight: "600",
   },
   button: {
     backgroundColor: "#6C5CE7",
