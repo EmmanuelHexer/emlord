@@ -1,7 +1,7 @@
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -12,10 +12,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 
 export function Chat() {
-  const messages = useQuery(api.messages.list);
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.messages.list,
+    {},
+    { initialNumItems: 30 }
+  );
+  const messages = useMemo(
+    () => (results ? [...results].reverse() : []),
+    [results]
+  );
   const currentUser = useQuery(api.users.currentUser);
   const sendMessage = useMutation(api.messages.send);
   const { signOut } = useAuthActions();
@@ -23,12 +32,12 @@ export function Chat() {
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    if (messages && messages.length > 0) {
+    if (messages.length > 0) {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     }
-  }, [messages?.length]);
+  }, [messages.length]);
 
   const handleSend = async () => {
     const trimmed = text.trim();
@@ -57,6 +66,18 @@ export function Chat() {
         keyExtractor={(item) => item._id}
         style={styles.messageList}
         contentContainerStyle={styles.messageListContent}
+        ListHeaderComponent={
+          status === "CanLoadMore" ? (
+            <TouchableOpacity
+              style={styles.loadMoreButton}
+              onPress={() => loadMore(20)}
+            >
+              <Text style={styles.loadMoreText}>Load older messages</Text>
+            </TouchableOpacity>
+          ) : status === "LoadingMore" ? (
+            <ActivityIndicator size="small" color="#6C5CE7" style={{ marginBottom: 12 }} />
+          ) : null
+        }
         renderItem={({ item }) => {
           const isMe = item.userId === currentUser?._id;
           return (
@@ -92,11 +113,15 @@ export function Chat() {
           );
         }}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              No messages yet. Say hi!
-            </Text>
-          </View>
+          status === "LoadingFirstPage" ? (
+            <View style={styles.emptyContainer}>
+              <ActivityIndicator size="large" color="#6C5CE7" />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No messages yet. Say hi!</Text>
+            </View>
+          )
         }
       />
 
