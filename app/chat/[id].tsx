@@ -357,13 +357,14 @@ const styles = StyleSheet.create({
   },
   inputSafe: {
     backgroundColor: "#0D0D14",
+    paddingBottom: 8,
   },
   inputBar: {
     flexDirection: "row",
     alignItems: "flex-end",
     paddingHorizontal: 12,
     paddingTop: 10,
-    paddingBottom: 12,
+    paddingBottom: 14,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#1A1A26",
   },
