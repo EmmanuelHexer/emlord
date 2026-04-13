@@ -12,7 +12,18 @@
       "Bash(curl -s \"https://api.github.com/search/issues?q=%22two+output+files%22+repo:get-convex/convex-js&per_page=5\")",
       "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f'{i[\\\\\"number\\\\\"]}: {i[\\\\\"title\\\\\"]} - {i[\\\\\"html_url\\\\\"]}'\\) for i in data.get\\('items',[]\\)]\")",
       "Bash(ls -la \"F:/Programming/Personal Projects/emlord/convex/\"*.js)",
-      "Bash(npx @convex-dev/auth)"
+      "Bash(npx @convex-dev/auth)",
+      "Bash(curl -sL \"https://docs.convex.dev/production/best-practices/\")",
+      "Bash(curl -sL \"https://docs.convex.dev/database/indexes/\")",
+      "Bash(curl -sL \"https://docs.convex.dev/functions/query-functions\")",
+      "Bash(curl -sL \"https://docs.convex.dev/database/reading-data\")",
+      "Bash(npm install:*)",
+      "Bash(kill %1)",
+      "Bash(curl -s \"https://docs.convex.dev/database/schemas\")",
+      "Bash(curl -s \"https://docs.convex.dev/database/reading-data/indexes\")",
+      "Bash(curl -s \"https://docs.convex.dev/database/reading-data\")",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:medium.com)"
     ]
   }
 }

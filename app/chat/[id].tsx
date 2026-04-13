@@ -1,7 +1,9 @@
 import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { api } from "../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
+import { showError } from "../../lib/errorHandler";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { Id } from "../../convex/_generated/dataModel";
 import {
   View,
   Text,
@@ -15,10 +17,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-export function Chat() {
+export default function ChatScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const conversationId = id as Id<"conversations">;
+  const router = useRouter();
+
   const { results, status, loadMore } = usePaginatedQuery(
     api.messages.list,
-    {},
+    { conversationId },
     { initialNumItems: 30 }
   );
   const messages = useMemo(
@@ -26,10 +32,14 @@ export function Chat() {
     [results]
   );
   const currentUser = useQuery(api.users.currentUser);
+  const conversations = useQuery(api.conversations.list);
   const sendMessage = useMutation(api.messages.send);
-  const { signOut } = useAuthActions();
+
   const [text, setText] = useState("");
   const flatListRef = useRef<FlatList>(null);
+
+  // Find conversation display name
+  const conversation = conversations?.find((c) => c._id === conversationId);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -43,21 +53,31 @@ export function Chat() {
     const trimmed = text.trim();
     if (!trimmed) return;
     setText("");
-    await sendMessage({ body: trimmed });
+    try {
+      await sendMessage({ conversationId, body: trimmed });
+    } catch (e: unknown) {
+      setText(trimmed);
+      showError(e);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>emlord</Text>
-          <Text style={styles.headerSubtitle}>
-            {currentUser?.name || currentUser?.email || ""}
-          </Text>
-        </View>
-        <TouchableOpacity onPress={signOut} style={styles.signOutButton}>
-          <Text style={styles.signOutText}>Sign Out</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {conversation?.displayName ?? "Chat"}
+          </Text>
+          {conversation?.type === "group" && (
+            <Text style={styles.headerSubtitle}>
+              {conversation.members.length} members
+            </Text>
+          )}
+        </View>
+        <View style={{ width: 50 }} />
       </View>
 
       <FlatList
@@ -79,7 +99,7 @@ export function Chat() {
           ) : null
         }
         renderItem={({ item }) => {
-          const isMe = item.userId === currentUser?._id;
+          const isMe = item.authorId === currentUser?._id;
           return (
             <View
               style={[
@@ -135,7 +155,7 @@ export function Chat() {
             value={text}
             onChangeText={setText}
             placeholder="Type a message..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#6B7280"
             multiline
             maxLength={1000}
             onSubmitEditing={handleSend}
@@ -157,36 +177,39 @@ export function Chat() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F7FF",
+    backgroundColor: "#111118",
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#6C5CE7",
+    backgroundColor: "#1A1A24",
+    borderBottomWidth: 1,
+    borderBottomColor: "#2A2A3A",
     paddingTop: Platform.OS === "android" ? 40 : 12,
   },
+  backButton: {
+    paddingRight: 12,
+  },
+  backText: {
+    color: "#6C5CE7",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: "center",
+  },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#F9FAFB",
   },
   headerSubtitle: {
     fontSize: 12,
-    color: "rgba(255,255,255,0.7)",
-  },
-  signOutButton: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  signOutText: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
+    color: "#6B7280",
+    marginTop: 2,
   },
   messageList: {
     flex: 1,
@@ -195,6 +218,21 @@ const styles = StyleSheet.create({
     padding: 16,
     flexGrow: 1,
     justifyContent: "flex-end",
+  },
+  loadMoreButton: {
+    alignSelf: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: "#1A1A24",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#2A2A3A",
+  },
+  loadMoreText: {
+    color: "#6C5CE7",
+    fontSize: 13,
+    fontWeight: "500",
   },
   messageBubble: {
     maxWidth: "80%",
@@ -209,10 +247,10 @@ const styles = StyleSheet.create({
   },
   theirMessage: {
     alignSelf: "flex-start",
-    backgroundColor: "#fff",
+    backgroundColor: "#1A1A24",
     borderBottomLeftRadius: 4,
     borderWidth: 1,
-    borderColor: "#E8E6F0",
+    borderColor: "#2A2A3A",
   },
   senderName: {
     fontSize: 11,
@@ -228,7 +266,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   theirMessageText: {
-    color: "#333",
+    color: "#F9FAFB",
   },
   messageTime: {
     fontSize: 10,
@@ -239,7 +277,7 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.6)",
   },
   theirMessageTime: {
-    color: "#999",
+    color: "#6B7280",
   },
   emptyContainer: {
     flex: 1,
@@ -248,25 +286,27 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#999",
+    color: "#6B7280",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "flex-end",
     padding: 12,
-    backgroundColor: "#fff",
+    backgroundColor: "#1A1A24",
     borderTopWidth: 1,
-    borderTopColor: "#E8E6F0",
+    borderTopColor: "#2A2A3A",
   },
   textInput: {
     flex: 1,
-    backgroundColor: "#F8F7FF",
+    backgroundColor: "#111118",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 16,
     maxHeight: 100,
-    color: "#333",
+    color: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#2A2A3A",
   },
   sendButton: {
     backgroundColor: "#6C5CE7",

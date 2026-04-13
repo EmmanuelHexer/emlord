@@ -1,29 +1,35 @@
 import { query, mutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuth, validateString, throwError } from "./lib/serverErrors";
 
 export const list = query({
-  args: { paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { paginationOpts }) => {
+  args: {
+    conversationId: v.id("conversations"),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { conversationId, paginationOpts }) => {
     const results = await ctx.db
       .query("messages")
+      .withIndex("by_conversationId", (q) =>
+        q.eq("conversationId", conversationId)
+      )
       .order("desc")
       .paginate(paginationOpts);
 
     const userCache = new Map<string, string>();
     const page = await Promise.all(
       results.page.map(async (message) => {
-        let userName = userCache.get(message.userId);
+        let userName = userCache.get(message.authorId);
         if (!userName) {
-          const user = await ctx.db.get(message.userId);
+          const user = await ctx.db.get(message.authorId);
           userName = user?.name ?? user?.email ?? "Unknown";
-          userCache.set(message.userId, userName);
+          userCache.set(message.authorId, userName);
         }
         return {
           _id: message._id,
           _creationTime: message._creationTime,
-          userId: message.userId,
+          authorId: message.authorId,
           body: message.body,
           userName,
         };
@@ -35,10 +41,39 @@ export const list = query({
 });
 
 export const send = mutation({
-  args: { body: v.string() },
-  handler: async (ctx, { body }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not signed in");
-    await ctx.db.insert("messages", { userId, body });
+  args: {
+    conversationId: v.id("conversations"),
+    body: v.string(),
+  },
+  handler: async (ctx, { conversationId, body }) => {
+    const userId = await requireAuth(ctx);
+
+    // Verify membership
+    const membership = await ctx.db
+      .query("conversationMembers")
+      .withIndex("by_userId_conversationId", (q) =>
+        q.eq("userId", userId).eq("conversationId", conversationId)
+      )
+      .unique();
+
+    if (!membership) {
+      throwError("You are not a member of this conversation");
+    }
+
+    const text = validateString(body, "Message", { max: 1000 });
+
+    await ctx.db.insert("messages", {
+      conversationId,
+      authorId: userId,
+      body: text,
+    });
+
+    // Denormalize last message on conversation
+    const author = await ctx.db.get(userId);
+    await ctx.db.patch(conversationId, {
+      lastMessageText: text.length > 50 ? text.slice(0, 50) + "..." : text,
+      lastMessageTime: Date.now(),
+      lastMessageAuthor: userId,
+    });
   },
 });

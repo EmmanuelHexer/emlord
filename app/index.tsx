@@ -1,7 +1,7 @@
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { SignIn } from "./sign-in";
-import { Chat } from "./chat";
+import { Conversations } from "./conversations";
 
 export default function Index() {
   return (
@@ -15,7 +15,7 @@ export default function Index() {
         <SignIn />
       </Unauthenticated>
       <Authenticated>
-        <Chat />
+        <Conversations />
       </Authenticated>
     </View>
   );
@@ -24,6 +24,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#111118",
   },
   loading: {
     flex: 1,
