@@ -28,7 +28,10 @@
       "WebFetch(domain:createbytes.com)",
       "WebFetch(domain:blog.logrocket.com)",
       "WebFetch(domain:muz.li)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(lsof -ti:8081,8082,8083,19000,19001,19002)",
+      "Bash(xargs kill:*)"
     ]
   }
 }

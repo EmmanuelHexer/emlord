@@ -4,6 +4,7 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { Platform, View, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Stack } from "expo-router";
 
 SystemUI.setBackgroundColorAsync("#0D0D14");
@@ -21,18 +22,20 @@ const secureStorage = {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <View style={styles.root}>
-        <ConvexAuthProvider
-          client={convex}
-          storage={
-            Platform.OS === "ios" || Platform.OS === "android"
-              ? secureStorage
-              : undefined
-          }
-        >
-          <Stack screenOptions={{ headerShown: false }} />
-        </ConvexAuthProvider>
-      </View>
+      <KeyboardProvider>
+        <View style={styles.root}>
+          <ConvexAuthProvider
+            client={convex}
+            storage={
+              Platform.OS === "ios" || Platform.OS === "android"
+                ? secureStorage
+                : undefined
+            }
+          >
+            <Stack screenOptions={{ headerShown: false }} />
+          </ConvexAuthProvider>
+        </View>
+      </KeyboardProvider>
     </SafeAreaProvider>
   );
 }

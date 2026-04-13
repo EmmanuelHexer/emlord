@@ -25,7 +25,7 @@
       },
       "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "adjustNothing"
     },
     "web": {
       "favicon": "./assets/favicon.png"
