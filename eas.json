@@ -6,12 +6,22 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "enableProguardInReleaseBuilds": true,
+        "enableShrinkResourcesInReleaseBuilds": true
       },
       "env": {
         "EXPO_PUBLIC_CONVEX_URL": "https://polite-mandrill-982.convex.cloud"
       }
     },
-    "production": {}
+    "production": {
+      "android": {
+        "enableProguardInReleaseBuilds": true,
+        "enableShrinkResourcesInReleaseBuilds": true
+      },
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://polite-mandrill-982.convex.cloud"
+      }
+    }
   }
 }
