@@ -11,6 +11,7 @@ import {
   Pressable,
   Keyboard,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
@@ -62,7 +63,7 @@ export function SignIn() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -162,7 +163,7 @@ export function SignIn() {
           </TouchableOpacity>
         </Pressable>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
