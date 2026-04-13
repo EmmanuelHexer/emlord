@@ -155,6 +155,7 @@ export default function ChatScreen() {
                       )}
                     <Text
                       style={isMe ? styles.myText : styles.theirText}
+                      textBreakStrategy="simple"
                     >
                       {item.body}
                     </Text>
@@ -342,11 +343,15 @@ const styles = StyleSheet.create({
     color: "#F1F5F9",
     fontSize: 16,
     lineHeight: 22,
+    flexShrink: 1,
+    flexWrap: "wrap",
   },
   theirText: {
     color: "#E5E5E5",
     fontSize: 16,
     lineHeight: 22,
+    flexShrink: 1,
+    flexWrap: "wrap",
   },
   timeStamp: {
     fontSize: 11,
