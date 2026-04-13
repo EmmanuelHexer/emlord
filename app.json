@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "emlord",
+    "name": "Ethreal",
     "slug": "emlord",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,6 +17,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.hexerspeck.emlord",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -30,6 +31,12 @@
     "plugins": [
       "expo-router",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a7a9fda3-a440-42b2-b3f9-ed01261a37c7"
+      }
+    }
   }
 }
