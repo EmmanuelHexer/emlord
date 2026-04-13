@@ -160,10 +160,7 @@ export default function ChatScreen() {
                         isMe ? styles.myTime : styles.theirTime,
                       ]}
                     >
-                      {new Date(item._creationTime).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatTime(item._creationTime)}
                     </Text>
                   </View>
                 </View>
@@ -211,6 +208,15 @@ export default function ChatScreen() {
       </KeyboardAvoidingView>
     </View>
   );
+}
+
+function formatTime(timestamp: number): string {
+  const d = new Date(timestamp);
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
 }
 
 function formatDateHeader(timestamp: number): string {
@@ -295,12 +301,12 @@ const styles = StyleSheet.create({
     color: "#666",
     fontWeight: "500",
   },
-  /* All messages on the left — no flexDirection row needed */
+  /* All messages on the left */
   messageRow: {
     paddingHorizontal: 4,
+    alignItems: "flex-start",
   },
   bubble: {
-    alignSelf: "flex-start",
     maxWidth: "82%",
     borderRadius: 18,
     paddingHorizontal: 14,
@@ -332,11 +338,13 @@ const styles = StyleSheet.create({
     color: "#F1F5F9",
     fontSize: 16,
     lineHeight: 22,
+    flexShrink: 1,
   },
   theirText: {
     color: "#E5E5E5",
     fontSize: 16,
     lineHeight: 22,
+    flexShrink: 1,
   },
   timeStamp: {
     fontSize: 11,
