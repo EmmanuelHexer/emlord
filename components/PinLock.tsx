@@ -1,21 +1,100 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   Vibration,
   Animated,
+  Pressable,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { ConvexReactClient } from "convex/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const PIN_KEY = "ethreal_pin";
 const PIN_LENGTH = 4;
+const SECRET_TAPS = 7;
 
-type Mode = "enter" | "setup" | "confirm";
+type Mode = "enter" | "setup" | "confirm" | "reset";
 
 interface PinLockProps {
   onUnlock: () => void;
+}
+
+// Inner component that uses the auth context for PIN reset
+function ResetForm({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
+  const { signIn } = useAuthActions();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleVerify = async () => {
+    if (!email.trim() || !password) {
+      setError("Enter your email and password");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await signIn("password", { email: email.trim(), password, flow: "signIn" });
+      // If signIn succeeds, the user is verified
+      await SecureStore.deleteItemAsync(PIN_KEY);
+      onSuccess();
+    } catch {
+      setError("Incorrect email or password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.resetContainer}>
+      <Text style={styles.title}>Reset PIN</Text>
+      <Text style={styles.subtitle}>Sign in to verify your identity</Text>
+
+      <TextInput
+        style={styles.resetInput}
+        placeholder="Email"
+        placeholderTextColor="#555"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        autoCorrect={false}
+      />
+      <TextInput
+        style={styles.resetInput}
+        placeholder="Password"
+        placeholderTextColor="#555"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <TouchableOpacity
+        style={[styles.resetButton, loading && styles.resetButtonDisabled]}
+        onPress={handleVerify}
+        disabled={loading}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.resetButtonText}>
+          {loading ? "Verifying..." : "Verify & Reset PIN"}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onCancel} style={styles.cancelButton}>
+        <Text style={styles.cancelText}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
 
 export function PinLock({ onUnlock }: PinLockProps) {
@@ -25,6 +104,12 @@ export function PinLock({ onUnlock }: PinLockProps) {
   const [error, setError] = useState("");
   const [hasPin, setHasPin] = useState<boolean | null>(null);
   const [shakeAnim] = useState(new Animated.Value(0));
+
+  // Temp client for reset flow
+  const resetClient = useRef<ConvexReactClient | null>(null);
+
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     SecureStore.getItemAsync(PIN_KEY).then((stored) => {
@@ -48,6 +133,43 @@ export function PinLock({ onUnlock }: PinLockProps) {
       Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
     ]).start();
   }, [shakeAnim]);
+
+  const handleSecretTap = useCallback(() => {
+    if (mode !== "enter") return;
+    tapCount.current += 1;
+
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => {
+      tapCount.current = 0;
+    }, 2000);
+
+    if (tapCount.current >= SECRET_TAPS) {
+      tapCount.current = 0;
+      // Create a temporary Convex client for the reset auth flow
+      if (!resetClient.current) {
+        resetClient.current = new ConvexReactClient(
+          process.env.EXPO_PUBLIC_CONVEX_URL!,
+          { unsavedChangesWarning: false }
+        );
+      }
+      setMode("reset");
+      setPin("");
+      setError("");
+    }
+  }, [mode]);
+
+  const handleResetSuccess = useCallback(() => {
+    // PIN deleted, go to setup
+    setMode("setup");
+    setPin("");
+    setSetupPin("");
+    setError("");
+  }, []);
+
+  const handleResetCancel = useCallback(() => {
+    setMode("enter");
+    setError("");
+  }, []);
 
   const handlePress = useCallback(
     async (digit: string) => {
@@ -95,6 +217,22 @@ export function PinLock({ onUnlock }: PinLockProps) {
 
   if (hasPin === null) return null;
 
+  // Reset screen with temporary Convex provider
+  if (mode === "reset" && resetClient.current) {
+    const secureStorage = {
+      getItem: SecureStore.getItemAsync,
+      setItem: SecureStore.setItemAsync,
+      removeItem: SecureStore.deleteItemAsync,
+    };
+    return (
+      <View style={styles.container}>
+        <ConvexAuthProvider client={resetClient.current} storage={secureStorage}>
+          <ResetForm onSuccess={handleResetSuccess} onCancel={handleResetCancel} />
+        </ConvexAuthProvider>
+      </View>
+    );
+  }
+
   const title =
     mode === "setup"
       ? "Set your PIN"
@@ -112,6 +250,9 @@ export function PinLock({ onUnlock }: PinLockProps) {
   return (
     <View style={styles.container}>
       <View style={styles.top}>
+        <Pressable onPress={handleSecretTap}>
+          <Text style={styles.appName}>Ethreal</Text>
+        </Pressable>
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
 
@@ -171,9 +312,16 @@ const styles = StyleSheet.create({
   top: {
     alignItems: "center",
   },
+  appName: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#F9FAFB",
+    letterSpacing: 1,
+    marginBottom: 24,
+  },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 20,
+    fontWeight: "600",
     color: "#F9FAFB",
     marginBottom: 8,
   },
@@ -224,5 +372,45 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: "#F9FAFB",
     fontWeight: "400",
+  },
+  // Reset screen
+  resetContainer: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  resetInput: {
+    backgroundColor: "#1A1A26",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#F9FAFB",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#2A2A3A",
+  },
+  resetButton: {
+    backgroundColor: "#2563EB",
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  resetButtonDisabled: {
+    opacity: 0.5,
+  },
+  resetButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  cancelButton: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+  cancelText: {
+    color: "#666",
+    fontSize: 14,
   },
 });
