@@ -350,6 +350,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     flexShrink: 1,
     flexWrap: "wrap",
+    includeFontPadding: false,
+    paddingRight: 2,
   },
   theirText: {
     color: "#E5E5E5",
@@ -357,11 +359,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     flexShrink: 1,
     flexWrap: "wrap",
+    includeFontPadding: false,
+    paddingRight: 2,
   },
   timeStamp: {
     fontSize: 11,
     marginTop: 4,
     alignSelf: "flex-end",
+    includeFontPadding: false,
+    paddingRight: 2,
   },
   myTime: {
     color: "#64748B",
