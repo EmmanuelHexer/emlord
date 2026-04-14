@@ -229,8 +229,11 @@ function formatTime(timestamp: number): string {
 function formatDateHeader(timestamp: number): string {
   const date = new Date(timestamp);
   const now = new Date();
-  const diffDays = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+  // Compare calendar days, not time differences (so 10pm yesterday != today)
+  const msgDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round(
+    (nowDay.getTime() - msgDay.getTime()) / (1000 * 60 * 60 * 24)
   );
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
