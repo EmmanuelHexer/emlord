@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Id } from "../convex/_generated/dataModel";
+import { UserSkeleton } from "../components/Skeleton";
 
 type Mode = "select" | "group";
 
@@ -115,6 +116,13 @@ export default function NewChat() {
         autoCorrect={false}
       />
 
+      {users === undefined ? (
+        <View style={styles.list}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <UserSkeleton key={i} />
+          ))}
+        </View>
+      ) : (
       <FlatList
         data={filteredUsers}
         keyExtractor={(item) => item._id}
@@ -157,12 +165,11 @@ export default function NewChat() {
         }}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {users === undefined ? "Loading..." : "No users found"}
-            </Text>
+            <Text style={styles.emptyText}>No users found</Text>
           </View>
         }
       />
+      )}
 
       {mode === "group" && selectedUsers.length > 0 && groupName.trim() && (
         <TouchableOpacity

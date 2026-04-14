@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useMemo } from "react";
+import { ConversationSkeleton } from "./Skeleton";
 
 export function Conversations() {
   const conversations = useQuery(api.conversations.list);
@@ -56,7 +57,14 @@ export function Conversations() {
         />
       </View>
 
-      <FlatList
+      {conversations === undefined ? (
+        <View style={styles.list}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <ConversationSkeleton key={i} />
+          ))}
+        </View>
+      ) : (
+        <FlatList
         data={filtered}
         keyExtractor={(item) => item._id}
         style={styles.list}
@@ -114,6 +122,7 @@ export function Conversations() {
           </View>
         }
       />
+      )}
 
       <TouchableOpacity
         style={styles.fab}
