@@ -140,26 +140,23 @@ export default function ChatScreen() {
                     { marginBottom: item.isFirstInGroup ? 10 : 2 },
                   ]}
                 >
-                  <View style={styles.bubbleWrapper}>
-                    <View
-                      style={[
-                        styles.bubble,
-                        isMe ? styles.myBubble : styles.theirBubble,
-                        isMe && item.isFirstInGroup && styles.myBubbleTail,
-                        !isMe && item.isFirstInGroup && styles.theirBubbleTail,
-                      ]}
+                  <View
+                    style={[
+                      styles.bubble,
+                      isMe ? styles.myBubble : styles.theirBubble,
+                      isMe && item.isFirstInGroup && styles.myBubbleTail,
+                      !isMe && item.isFirstInGroup && styles.theirBubbleTail,
+                    ]}
+                  >
+                    {!isMe &&
+                      item.isLastInGroup &&
+                      conversation?.type === "group" && (
+                        <Text style={styles.senderName}>{item.userName}</Text>
+                      )}
+                    <Text
+                      style={isMe ? styles.myText : styles.theirText}
                     >
-                      {!isMe &&
-                        item.isLastInGroup &&
-                        conversation?.type === "group" && (
-                          <Text style={styles.senderName}>{item.userName}</Text>
-                        )}
-                      <Text
-                        style={isMe ? styles.myText : styles.theirText}
-                        textBreakStrategy="simple"
-                      >
-                        {item.body}
-                      </Text>
+                      {item.body}{" "}
                       <Text
                         style={[
                           styles.timeStamp,
@@ -168,7 +165,7 @@ export default function ChatScreen() {
                       >
                         {formatTime(item._creationTime)}
                       </Text>
-                    </View>
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -314,13 +311,10 @@ const styles = StyleSheet.create({
   /* All messages on the left */
   messageRow: {
     paddingHorizontal: 4,
-    alignItems: "flex-start",
-  },
-  bubbleWrapper: {
-    maxWidth: BUBBLE_MAX_WIDTH,
+    flexDirection: "row",
   },
   bubble: {
-    alignSelf: "flex-start",
+    maxWidth: BUBBLE_MAX_WIDTH,
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 9,
@@ -351,26 +345,14 @@ const styles = StyleSheet.create({
     color: "#F1F5F9",
     fontSize: 16,
     lineHeight: 22,
-    flexShrink: 1,
-    flexWrap: "wrap",
-    includeFontPadding: false,
-    paddingRight: 2,
   },
   theirText: {
     color: "#E5E5E5",
     fontSize: 16,
     lineHeight: 22,
-    flexShrink: 1,
-    flexWrap: "wrap",
-    includeFontPadding: false,
-    paddingRight: 2,
   },
   timeStamp: {
     fontSize: 11,
-    marginTop: 4,
-    alignSelf: "flex-end",
-    includeFontPadding: false,
-    paddingRight: 2,
   },
   myTime: {
     color: "#64748B",
